@@ -3,3 +3,4 @@
 export(estCovParSSNbd)
 export(estFixEffSSNbd)
 export(subSampIndxSSN)
+export(createBigDistMat)

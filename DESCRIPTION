@@ -4,6 +4,7 @@ Title: Spatial Modeling for Big Data Sets on Stream Networks
 Version: 1.0.0
 Date: 2018-02-01
 Depends: R (>= 3.4.0), SSN 
+Imports: filematrix, foreach, doParallel, iterators, itertools, parallel
 Authors@R: c(person("Jay", "Ver Hoef", role = c("aut", "cre"), email = "ver.hoef@SpatialStreamNetworks.com"),
              person("Erin", "Peterson", role = c("aut"), email = "peterson@SpatialStreamNetworks.com"))
 Maintainer: Jay Ver Hoef <ver.hoef@SpatialStreamNetworks.com>
