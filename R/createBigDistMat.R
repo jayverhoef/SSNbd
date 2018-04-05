@@ -36,7 +36,7 @@
 #' @author Erin Peterson
 #' @export
 #' @importFrom filematrix fm.create
-#' @importFrom parallel makeCluster
+#' @importFrom parallel makeCluster stopCluster
 #' @import doParallel
 #' @import foreach
 #' @import itertools
