@@ -72,7 +72,7 @@ estCovParSSNbd = function(formula, ssn.object,
                 length(offset), NROW(y)), domain = NA)
     }
     X = model.matrix(mt, mf, contrasts)
-    distLi = distList(DF, y, X, xy, CorModels = CorModels, 
+    distLi = distList(ssn.object, DF, y, X, xy, CorModels = CorModels, 
 			addfunccol = addfunccol, subSampIndxCol = subSampIndxCol, 
 			distPath = ssn.object@path)
     #initial estimate of theta

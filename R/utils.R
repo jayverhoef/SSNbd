@@ -1,4 +1,4 @@
-distUpdater = function(DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol, i,
+distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol, i,
 	distPath, useTailDownWeight = FALSE)
 {    
     DFi = DFr[DFr[subSampIndxCol] == i,] 
@@ -13,6 +13,7 @@ distUpdater = function(DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol, i,
       DFi[,"pid"])
     DFi = DFi[distord,]
     names(distord) <- rownames(DFi)[distord]
+    distmati = getStreamDistMatInt(ssnr, DFi[,"pid"],'Obs')
     for(k in nIDs) {
 #			workspace.name <- "dist.net2.bmat"
 			workspace.name <- paste0("dist.net", k, ".bmat")
@@ -83,12 +84,12 @@ distUpdater = function(DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol, i,
       A = A, B = B, netD = netD, W = W, FCmat = FCmat, Zs = Zs)
 }
 
-distList = function(DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol,
+distList = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol,
 	distPath)
 {
   nResamp = max(DFr[,subSampIndxCol])
   Dlists = foreach(i=1:nResamp) %dopar% {
-    distUpdater(DFr = DFr, y = y, X = X, 
+    distUpdater(ssnr = ssnr, DFr = DFr, y = y, X = X, 
     xy = xy, CorModels = CorModels,  addfunccol = addfunccol, 
     subSampIndxCol = subSampIndxCol, i = i, distPath = distPath)
   }
