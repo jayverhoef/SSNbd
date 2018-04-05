@@ -22,7 +22,7 @@ distUpdater = function(DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol, i,
 	    if(!file.exists(path)) {
 		    stop("Unable to locate required distance matrix")
 	    }
-	    fm.open(path)
+	    distMatPoint = fm.open(path)
 	    file_handle <- file(path, open="rb")
 	    distmat <- unserialize(file_handle)
 	    ordpi <- order(as.numeric(rownames(distmat)))
