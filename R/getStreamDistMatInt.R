@@ -184,7 +184,7 @@ getStreamDistMatInt <- function(ssn, pidset1, dataID1, pidset2 = NULL,
             pid1.pid1[ind.sub, ind.sub]<- tmp[ind.whole,]
             ##pid1.pid1[ind.sub,ind.sub] <- dist[ind.whole,ind.whole]
             rm(tmp)
-            close(dist)
+            ##close(dist)
         }
         rm(dist)
         ind <- pid1.pid1 == -1
@@ -263,7 +263,7 @@ getStreamDistMatInt <- function(ssn, pidset1, dataID1, pidset2 = NULL,
             ## Subset by row and populate pid1.pid2.a
             ind.whole2 <- rownames(as.matrix(tmp.c)) %in% data2[ind.sub2, "pid"]
             pid2.pid1.b[ind.sub2, ind.sub1]<- tmp.c[ind.whole2,]
-            close(dist)
+            ##close(dist)
             rm(ind.whole1, ind.whole2, ind.sub1, ind.sub2, tmp.c)
         }
 
@@ -345,7 +345,7 @@ getStreamDistMatInt <- function(ssn, pidset1, dataID1, pidset2 = NULL,
             ## Subset by row and populate pid1.pid2.a
             ind.whole2 <- rownames(tmp.c) %in% data2[ind.sub2, "pid"]
             pid1.pid2.a[ind.sub1, ind.sub2]<- t(tmp.c[ind.whole2,])
-            close(dist.a)
+            ##close(dist.a)
             rm(ind.whole1, ind.whole2)
 
             ## Populate dist.b--------------------------------------------
@@ -366,7 +366,7 @@ getStreamDistMatInt <- function(ssn, pidset1, dataID1, pidset2 = NULL,
             ## Subset by row and populate pid1.pid2.a
             ind.whole2 <- rownames(tmp.c) %in% data2[ind.sub2, "pid"]
             pid2.pid1.b[ind.sub2, ind.sub1]<- tmp.c[ind.whole2,]
-            close(dist.b)
+            ##close(dist.b)
             rm(ind.whole1, ind.whole2, ind.sub1, ind.sub2)
         }
 
