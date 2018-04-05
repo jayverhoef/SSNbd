@@ -1,5 +1,4 @@
 
-
 amongObsBigDistMat <- function(ssn, net.num, pids, bin.table, workspace.name){
 
     ##require(filematrix)

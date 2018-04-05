@@ -11,7 +11,7 @@
 #' @param ssn \link{SpatialStreamNetwork-class} object
 #' @param predpts a valid predpoints ID from the ssn. Default is \code{NULL}.
 #' @param o.write If \code{TRUE}, overwrite existing distance matrices. Defaults to \code{FALSE}.
-#' @param amongpreds If \code{TRUE}, compute the distances between the prediction sites. Defaults to \code{FALSE}. 
+#' @param amongpreds If \code{TRUE}, compute the distances between the prediction sites. Defaults to \code{FALSE}.
 #' @param no.cores nNumber of cores to use in computation of the distance matrices. Also, the number of chunks to split the dataset into during computation.
 #'
 #' @details   A distance matrix that contains the hydrologic distance between any two sites in SpatialStreamNetwork object is needed to fit a spatial statistical model using the tail-up and tail-down autocovariance functions described in Ver Hoef and Peterson (2010). These models are implemented in R via \command{glmssn} in the SSN package. The hydrologic distance information needed to model the covariance between flow-connected (i.e. water flows from one location to the other) and flow-unconnected (i.e. water does not flow from one location to the other, but they reside on the same network) locations differs. The total hydrologic distance is a directionless measure; it represents the hydrologic distance between two sites, ignoring flow direction. The hydrologic distance   from each site to a common downstream stream junction is used when creating models for flow-unconnected pairs, which we term downstream hydrologic distance. In contrast, the total hydrologic distance is used for modeling flow-connected pairs, which we term total hydrologic distance. \cr
@@ -37,6 +37,7 @@
 #' @export
 #' @importFrom filematrix fm.create
 #' @importFrom parallel makeCluster stopCluster
+#' @importFrom SSN get.rid.fc
 #' @import doParallel
 #' @import foreach
 #' @import itertools
