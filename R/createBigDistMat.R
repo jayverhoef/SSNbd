@@ -37,7 +37,6 @@
 #' @export
 #' @importFrom filematrix fm.create
 #' @importFrom parallel makeCluster stopCluster
-#' @importFrom SSN get.rid.fc
 #' @import doParallel
 #' @import foreach
 #' @import itertools

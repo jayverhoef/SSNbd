@@ -71,7 +71,7 @@ amongObsPredsBigDistMat <- function(ssn, net.num, pred.num, obs.pids, pred.pids,
 
         if(locID.ob != locID.old) {
 
-            junk <- get.rid.fc(pred_by_locID[dup.pred,"binaryID"],
+            junk <- SSN:::get.rid.fc(pred_by_locID[dup.pred,"binaryID"],
                                      obs_by_locID$binaryID[ind.pid])
 
             ob.j <- getObsPredsRelationshipsDF(ssn, junk, dup.pred, pred_by_locID,

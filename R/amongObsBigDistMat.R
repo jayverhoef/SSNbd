@@ -47,7 +47,7 @@ amongObsBigDistMat <- function(ssn, net.num, pids, bin.table, workspace.name){
 
         if(locID.b != locID.old) {
 
-            junk <- get.rid.fc(ob.i_by_locID[ind.dup,"binaryID"],
+            junk <- SSN:::get.rid.fc(ob.i_by_locID[ind.dup,"binaryID"],
                                      ob.i_by_locID$binaryID[ind.pid])
 
             #####
