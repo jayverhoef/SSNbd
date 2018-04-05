@@ -1,21 +1,46 @@
+#-------------------------------------------------------------------------------
+#
+#           getStreamDistMatInt
+#
+#-------------------------------------------------------------------------------
 
+#' Extracts downstream-only hydrologic distances for two vectors of pids
+#'
+#' Extracts downstream-only hydrologic distances for two vectors of pids and
+#' returns a list of distance matrices.
+#'
+#' @param ssn a SpatialStreamNetwork object created using the SSN package
+#'
+#' @param pidset1 a vector of pids found within a SpatialStreamNetwork object
+#'
+#' @param dataID1 a character string representing the name of the dataset found
+#'   in the SpatialStreamNetwork object slot ID
+#'
+#' @param pidset2 a vector of pids found within a SpatialStreamNetwork object.
+#'   Default = NULL.
+#'
+#' @param dataID2 a character string representing the name of the dataset found
+#'   in the SpatialStreamNetwork object slot ID. Default = NULL.
+#'
+#'
+#' @return a list matrices containing the of downstream-only hydrologic distance for
+#'   pidset1 and pidset2. If pidset2 is omitted, the function returns the downstream-only
+#'   hydrologic distances between pidset1 and pidset1. See documentation for
+#'   createBigDistMat for more information about the format of the distance matrices.
+#'
+#' @author Erin Peterson
+#' @export
+#'
+#' @examples
+#' ## ssn<- importSSN("raw5.ssn", predpts = "preds")
+#' ## createBigDistMat(ssn, predpts = "preds", o.write = TRUE, amongpreds = TRUE,
+#' ##                  no.cores = 2)
+#' ## pidset1 <- c(1, 3, 9, 28, 34, 51)
+#' ## pidset2 <- c(4, 7, 30, 35)
 
-##If obs is included in the function call, then dataID1 must = "obs".
-## At present, the pids in pidset1 must come from a single dataset.
-## This is also true of pidset2.
+#' ## distmats <- getStreamDistMatInt(ssn, pidset1, dataID1 = "preds",
+#' ##                                  pidset2 = pidset2, dataID2 = "preds")
 
-## Example
-## ssn<- importSSN("raw5.ssn", predpts = "preds")
-## createBigDistMat(ssn, predpts = "preds", o.write = TRUE, amongpreds = TRUE,
-##                  no.cores = 2)
-## pidset1 <- c(1, 3, 9, 28, 34, 51)
-## pidset2 <- c(4, 7, 30, 35)
-
-## distmats <- SSN:::getStreamDistMatInt(ssn, pidset1, dataID1 = "preds",
-##                                  pidset2 = pidset2, dataID2 = "preds")
-
-## Returns a list of distance matrices, of length 1 or 2, depending on
-## whether an a and b matrix are required.
 
 getStreamDistMatInt <- function(ssn, pidset1, dataID1, pidset2 = NULL,
                                 dataID2 = NULL)
