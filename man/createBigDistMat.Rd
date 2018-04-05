@@ -37,6 +37,31 @@ If the argument \code{predpts} is specified in the call to the function, the dow
 \cr
 The distance matrices generated using the createBigDistMat function are file-backed, meaning that they are stored as files, rather than in memory. This approach is more computationally efficient when users must calculate a large number of pairwise distances between observed and/or prediction locations. The \code{no.cores} argument designates the number of cores to be used if the code is to be executed in parallel. Note that, the \code{detectCores} function can be used to detect the number of cores available. The \code{no.cores} argument is also used to 'chunk' the dataset into multiple parts for processing, with one part allocated to each core. However, there is an overhead for connecting to each core and so the computational benefits of using the createBigDistMat function over the createDistMat function are only evident when datasets are large.
 }
+\examples{
+library(SSN)
+# NOT RUN
+# mf04 <- importSSN(system.file("lsndata/MiddleFork04.ssn",
+#	        package = "SSN"), o.write = TRUE)
+# use SpatialStreamNetwork object mf04 that was already created
+data(mf04)
+# for examples, copy MiddleFork04.ssn directory to R's temporary directory
+copyLSN2temp()
+#make sure mf04p has the correct path, will vary for each users installation
+mf04 <- updatePath(mf04, paste0(tempdir(),'/MiddleFork04.ssn'))
+
+# create distance matrix among observed data points
+createBigDistMat(mf04, o.write = TRUE, no.cores = 1)
+
+# create distance matrix among observed data points
+#     and between observed and prediction points
+data(mf04p)
+mf04p <- updatePath(mf04p, paste0(tempdir(),'/MiddleFork04.ssn'))
+createBigDistMat(mf04p, predpts = "pred1km", o.write = TRUE, no.cores = 1)
+
+# NOT RUN include prediction to prediction site distances
+      # createBigDistMat(mf04p, predpts = "pred1km", o.write = TRUE,
+      #     amongpreds = TRUE, no.cores = 4)
+}
 \seealso{
 \code{\link{SpatialStreamNetwork-class}}, \code{\link{importSSN}}, \code{\link{createSSN}}, \code{\link{glmssn}}
 }
