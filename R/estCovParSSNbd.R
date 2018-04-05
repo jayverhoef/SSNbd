@@ -38,6 +38,7 @@
 #'
 #' @author Jay Ver Hoef
 #' @export
+#' @importFrom filematrix fm.open fm.load
 
 estCovParSSNbd = function(formula, ssn.object, 
 	CorModels = c("Exponential.tailup", "Exponential.taildown", 

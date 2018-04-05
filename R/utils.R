@@ -14,12 +14,15 @@ distUpdater = function(DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol, i,
     DFi = DFi[distord,]
     names(distord) <- rownames(DFi)[distord]
     for(k in nIDs) {
-      workspace.name <- paste("dist.net", k, ".RData", sep = "")
+#			workspace.name <- "dist.net2.bmat"
+			workspace.name <- paste0("dist.net", k, ".bmat")
+#      workspace.name <- paste("dist.net", k, ".RData", sep = "")
       path <- file.path(distPath, "distance", "obs",
 		    workspace.name)
 	    if(!file.exists(path)) {
 		    stop("Unable to locate required distance matrix")
 	    }
+	    fm.open(path)
 	    file_handle <- file(path, open="rb")
 	    distmat <- unserialize(file_handle)
 	    ordpi <- order(as.numeric(rownames(distmat)))
