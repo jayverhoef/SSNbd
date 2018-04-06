@@ -45,6 +45,11 @@
 getStreamDistMatInt <- function(ssn, pidset1, dataID1, pidset2 = NULL,
                                 dataID2 = NULL)
 {
+
+    on.exit({
+          closeAllConnections()
+    })
+
     ##library(filematrix)
     ## Check arguments
     if(class(ssn) != "SpatialStreamNetwork")
