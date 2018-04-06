@@ -2,7 +2,9 @@
 
 export(createBigDistMat)
 export(estCovParSSNbd)
+export(estCovParSSNbd_orig)
 export(estFixEffSSNbd)
+export(estFixEffSSNbd_orig)
 export(getStreamDistMatInt)
 export(subSampIndxSSN)
 import(doParallel)

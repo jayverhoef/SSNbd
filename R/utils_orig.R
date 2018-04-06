@@ -1,4 +1,4 @@
-distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol, i,
+distUpdater_orig = function(DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol, i,
 	distPath, useTailDownWeight = FALSE)
 {    
     DFi = DFr[DFr[subSampIndxCol] == i,] 
@@ -14,20 +14,18 @@ distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCo
     DFi = DFi[distord,]
     names(distord) <- rownames(DFi)[distord]
     for(k in nIDs) {
-#			workspace.name <- "dist.net2.bmat"
-#			workspace.name <- paste0("dist.net", k, ".bmat")
-#      workspace.name <- paste("dist.net", k, ".RData", sep = "")
-#      path <- file.path(distPath, "distance", "obs",
-#		    workspace.name)
-#	    distMatPoint = fm.open(path)
-#	    file_handle <- file(path, open="rb")
-#	    distmat <- unserialize(file_handle)
-#	    ordpi <- order(as.numeric(rownames(distmat)))
-#	    close(file_handle)
-#      distmatk = distmati[rownames(distmati) %in% DFi$pid, 
-#        rownames(distmati) %in% DFi$pid, drop = FALSE]
-      distmatk = getStreamDistMatInt(ssnr,
-				DFi[DFi$netID == k, 'pid'], 'Obs')[[1]]
+      workspace.name <- paste("dist.net", k, ".RData", sep = "")
+      path <- file.path(distPath, "distance", "obs",
+		    workspace.name)
+	    if(!file.exists(path)) {
+		    stop("Unable to locate required distance matrix")
+	    }
+	    file_handle <- file(path, open="rb")
+	    distmat <- unserialize(file_handle)
+	    ordpi <- order(as.numeric(rownames(distmat)))
+	    close(file_handle)
+      distmatk = distmat[rownames(distmat) %in% DFi$pid, 
+        rownames(distmat) %in% DFi$pid, drop = FALSE]
 	    nk <- dim(distmatk)[1]
 	    netDJ[(nsofar + 1):(nsofar + nk),(nsofar + 1):
 		    (nsofar + nk)] <- distmatk
@@ -82,58 +80,21 @@ distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCo
       A = A, B = B, netD = netD, W = W, FCmat = FCmat, Zs = Zs)
 }
 
-distList = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol,
+distList_orig = function(DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol,
 	distPath)
 {
   nResamp = max(DFr[,subSampIndxCol])
   Dlists = foreach(i=1:nResamp) %dopar% {
-    distUpdater(ssnr = ssnr, DFr = DFr, y = y, X = X, 
+    distUpdater_orig(DFr = DFr, y = y, X = X, 
     xy = xy, CorModels = CorModels,  addfunccol = addfunccol, 
     subSampIndxCol = subSampIndxCol, i = i, distPath = distPath)
   }
  Dlists
 }
 
-m2LLstrbd <- function(theta, distLi,
-	CorModels, use.nugget, use.anisotropy, useTailDownWeight,
-	EstMeth = "REML", n, p, scale, maxrang = NULL)
-{
-	  theta1 <- SSN:::untrans.theta(theta = theta, scale = scale)
-    nResamp = length(distLi)
-    Vlists = foreach(i=1:nResamp) %dopar% {
-      V = SSN:::makeCovMat(theta = theta1, dist.hydro = distLi[[i]]$netD, 
-        a.mat = distLi[[i]]$A, b.mat = distLi[[i]]$B, 
-        w.matrix = distLi[[i]]$W, net.zero = distLi[[i]]$net0, 
-        x.row = distLi[[i]]$xc, y.row = distLi[[i]]$yc, 
-        x.col = distLi[[i]]$xc, y.col= distLi[[i]]$yc, 
-        useTailDownWeight = FALSE,
-        CorModels = CorModels, 
-        use.nugget = TRUE, use.anisotropy = FALSE, 
-        REs = distLi[[i]]$Zs)
-        qrV = qr(V)
-        list(V = V, qrV = qrV, ViX = solve(qrV,distLi[[i]]$X), 
-          Viy = solve(qrV,distLi[[i]]$y),
-          logdet = sum(log(abs(diag(qr.R(qrV))))),
-          XViX = crossprod(distLi[[i]]$X,solve(qrV,distLi[[i]]$X)),
-          XViy = crossprod(distLi[[i]]$y,solve(qrV,distLi[[i]]$X)),
-          yViy = crossprod(distLi[[i]]$y,solve(qrV,distLi[[i]]$y)))
-    }
 
-    Sxx = Reduce('+',lapply(Vlists,function(x){x[['XViX']]}))
-    sxy = Reduce('+',lapply(Vlists,function(x){x[['XViy']]}))
-    syy = Reduce('+',lapply(Vlists,function(x){x[['yViy']]}))
-    ell = Reduce('+',lapply(Vlists,function(x){x[['logdet']]}))
-    f1 = syy - crossprod(solve(Sxx,as.vector(sxy)),as.vector(sxy)) +  ell 
-	
-    if(EstMeth == "REML") f1 <- f1 + determinant(Sxx, logarithm = TRUE)$modulus
-	  nmult <- (n - p)*log(2*pi)
-	  if(EstMeth == "ML") nmult <- n*log(2*pi)
-	  result <- f1 + nmult
 
-    as.numeric(result)
-}
-
-makeSigijMats = function(ssnr, DFr, xy, CorModels, theta, addfunccol, subSampIndxCol, i, j,
+makeSigijMats_orig = function(DFr, xy, CorModels, theta, addfunccol, subSampIndxCol, i, j,
 	distPath, useTailDownWeight = FALSE, Vlist)
 {    
 #		DFr = DF
@@ -178,25 +139,20 @@ makeSigijMats = function(ssnr, DFr, xy, CorModels, theta, addfunccol, subSampInd
     names(distordi) <- rownames(DFi)[distordi]
     names(distordj) <- rownames(DFj)[distordj]
     for(k in nIDs) {
-#      workspace.name <- paste0("dist.net", k, ".RData")
-#      path <- file.path(distPath, "distance", "obs",
-#		    workspace.name)
-#	    if(!file.exists(path)) {
-#		    stop("Unable to locate required distance matrix")
-#	    }
-#	    file_handle <- file(path, open="rb")
-#	    distmat <- unserialize(file_handle)
-#	    ordpi <- order(as.numeric(rownames(distmat)))
-#	    close(file_handle)
-#      distmatk = distmat[rownames(distmat) %in% DFi$pid, 
-#        rownames(distmat) %in% DFj$pid, drop = FALSE]
-#      distmatkt = distmat[rownames(distmat) %in% DFj$pid, 
-#        rownames(distmat) %in% DFi$pid, drop = FALSE]
-      distmat = getStreamDistMatInt(ssnr,
-				DFi[DFi$netID == k, 'pid'], 'Obs', 
-				DFj[DFj$netID == k, 'pid'], 'Obs')
-			distmatk = distmat[[1]]
-			distmatkt = distmat[[2]]
+      workspace.name <- paste0("dist.net", k, ".RData")
+      path <- file.path(distPath, "distance", "obs",
+		    workspace.name)
+	    if(!file.exists(path)) {
+		    stop("Unable to locate required distance matrix")
+	    }
+	    file_handle <- file(path, open="rb")
+	    distmat <- unserialize(file_handle)
+	    ordpi <- order(as.numeric(rownames(distmat)))
+	    close(file_handle)
+      distmatk = distmat[rownames(distmat) %in% DFi$pid, 
+        rownames(distmat) %in% DFj$pid, drop = FALSE]
+      distmatkt = distmat[rownames(distmat) %in% DFj$pid, 
+        rownames(distmat) %in% DFi$pid, drop = FALSE]
 	    nki <- dim(distmatk)[1]
 	    nkj <- dim(distmatk)[2]
 			if(nki > 0) nsofari1 = nsofari + nki
@@ -270,89 +226,4 @@ makeSigijMats = function(ssnr, DFr, xy, CorModels, theta, addfunccol, subSampInd
         REs = Zs)
 
 				return(list(XViCViX = t(Vlist[[i]]$ViX) %*% Cij %*% Vlist[[j]]$ViX))
-}
-
-dMatsEtc = function(ssn, CorModels, dname1, DF1, xy1, 
-	dname2 = NULL, DF2 = NULL, xy2 = NULL)
-{	
-	ssn = ecp$ssn
-	dname1 ='Obs'
-	dname2 ='pred1km'
-	useTailDownWeight = FALSE
-	a.mat <- NULL
-	b.mat <- NULL
-	net.zero <- NULL
-	w.matrix <- NULL
-	dist.hydro <- NULL
-	flow.con.mat = NULL
-	dist.junc = NULL
-	rnames <- NULL
-		if(length(grep("tail",CorModels)) > 0 | useTailDownWeight == TRUE){
-			if(length(grep("taildown",CorModels)) > 1)
-				stop("Cannot have more than 1 tailup model")
-			nobs <- dim(DF1)[1]
-			if(is.null(dname2)) {
-				dist.junc <- matrix(0, nrow = nobs, ncol = nobs)
-				net.zero <-  matrix(0, nrow = nobs, ncol = nobs)
-			}
-			if(!is.null(dname2)) {
-				npred = dim(DF2)[1]
-				dist.junc <- matrix(0, nrow = nobs, ncol = npred)
-				net.zero <-  matrix(0, nrow = nobs, ncol = npred)
-			}		
-			nsofar <- 0
-			nIDs <- sort(as.integer(as.character(unique(c(DF1$netID,DF2$netID)))))
-			for(k in nIDs){
-				if(is.null(dname2))
-					distmat = getStreamDistMatInt(ssn,
-						DF1[DF1$netID == k, 'pid'], dname1)[[1]]
-				if(!is.null(dname2))
-					distmat = getStreamDistMatInt(ssn,
-						DF1[DF1$netID == k, 'pid'], dname1,
-						DF2[DF2$netID == k, 'pid'], dname2)
-				rnames <- c(rnames,rownames(distmat))
-				ni <- length(distmat[1,])
-				dist.junc[(nsofar + 1):(nsofar + ni),
-					(nsofar + 1):(nsofar + ni)] <- distmat
-				net.zero[(nsofar + 1):(nsofar + ni),
-					(nsofar + 1):(nsofar + ni)] <- 1
-				nsofar <- nsofar + ni
-			}
-			rownames(dist.junc) = colnames(dist.junc) = rnames
-			rownames(net.zero) = colnames(net.zero) = rnames
-			# maximum distance to common junction between two sites
-			a.mat <- pmax(dist.junc,t(dist.junc))
-			# minimum distance to common junction between two sites
-			b.mat <- pmin(dist.junc,t(dist.junc))
-			# binary flow connection matrix
-			flow.con.mat <- 1 - (b.mat > 0)*1
-			# hydrological distance
-			dist.hydro <- as.matrix(dist.junc + t(dist.junc))*net.zero
-                        flow.con.mat <- 1 - (b.mat > 0)*1
-			addfunccol <- ecp$mfcall$addfunccol
-			w.matrix <- sqrt(pmin(outer(DF1[,addfunccol],
-				rep(1, times = nobs)),
-				t(outer(DF1[,addfunccol],rep(1, times = nobs)))) /
-				pmax(outer(DF1[,addfunccol],rep(1, times = nobs)),
-				t(outer(DF1[,addfunccol],rep(1, times = nobs))))) *
-				flow.con.mat*net.zero
-		}
-		
-		Edis = SSN:::distGeo(xy1[,1], xy1[,2], xy1[,1], xy1[,2])
-		rownames(Edis) = colnames(Edis) = rnames
-
-		REind <- which(names(DF1) %in% CorModels)
-		if(length(REind)) {
-			REs <- list()
-			REnames <- sort(names(datao)[REind])
-			## model matrix for a RE factor
-      for(ii in 1:length(REind)) REs[[REnames[ii]]] <-
-				model.matrix(~DF1[,REnames[ii]] - 1)
-				rownames(REs[[REnames[ii]]]) <- DF1[,"pid"]
-			## corresponding block matrix
-			for(ii in 1:length(REind)) REs[[ii]] <- REs[[ii]] %*% t(REs[[ii]])
-		}
-	return(list(dist.junc = dist.junc, net.zero = net.zero, a.mat = a.mat,
-		b.mat = b.mat, dist.hydro = dist.hydro, w.matrix = w.matrix, Edis = Edis,
-		REs = REs))
 }
