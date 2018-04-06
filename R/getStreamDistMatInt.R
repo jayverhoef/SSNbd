@@ -136,7 +136,12 @@ getStreamDistMatInt <- function(ssn, pidset1, dataID1, pidset2 = NULL,
     ind1 <- x1@SSNPoints[[id.num1]]@point.data$pid %in% pidset1
     data1 <- cbind(x1@SSNPoints[[id.num1]]@point.data$pid[ind1], as.numeric(as.character(x1@SSNPoints[[id.num1]]@point.data$netID[ind1])))
     colnames(data1) <- c("pid", "netID")
-    data1 <- data1[order(data1[,"netID"], data1[,"pid"]),]
+
+    if(nrow(data1) > 1) {
+        data1 <-data1[order(data1[,"netID"], data1[,"pid"]),]}
+
+########    ###BREAKS HERE
+
     nIDs1 <- unique(data1[,"netID"])
 
     if(same == TRUE) {
@@ -146,7 +151,9 @@ getStreamDistMatInt <- function(ssn, pidset1, dataID1, pidset2 = NULL,
         ind2 <- x2@SSNPoints[[id.num2]]@point.data$pid %in% pidset2
         data2 <- cbind(x2@SSNPoints[[id.num2]]@point.data$pid[ind2], as.numeric(as.character(x2@SSNPoints[[id.num2]]@point.data$netID[ind2])))
         colnames(data2) <- c("pid", "netID")
-        data2 <- data2[order(data2[,"netID"], data2[,"pid"]),]
+
+        if(nrow(data2) > 1) {
+            data2 <- data2[order(data2[,"netID"], data2[,"pid"]),]}
         nIDs2 <- unique(data2[,"netID"])
     }
     ## Check to make sure all pids came from 1 dataset. Take this
