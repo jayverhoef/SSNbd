@@ -13,23 +13,21 @@ distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCo
       DFi[,"pid"])
     DFi = DFi[distord,]
     names(distord) <- rownames(DFi)[distord]
-    distmati = getStreamDistMatInt(ssnr, DFi[,"pid"],'Obs')
     for(k in nIDs) {
 #			workspace.name <- "dist.net2.bmat"
-			workspace.name <- paste0("dist.net", k, ".bmat")
+#			workspace.name <- paste0("dist.net", k, ".bmat")
 #      workspace.name <- paste("dist.net", k, ".RData", sep = "")
-      path <- file.path(distPath, "distance", "obs",
-		    workspace.name)
-	    if(!file.exists(path)) {
-		    stop("Unable to locate required distance matrix")
-	    }
-	    distMatPoint = fm.open(path)
-	    file_handle <- file(path, open="rb")
-	    distmat <- unserialize(file_handle)
-	    ordpi <- order(as.numeric(rownames(distmat)))
-	    close(file_handle)
-      distmatk = distmat[rownames(distmat) %in% DFi$pid, 
-        rownames(distmat) %in% DFi$pid, drop = FALSE]
+#      path <- file.path(distPath, "distance", "obs",
+#		    workspace.name)
+#	    distMatPoint = fm.open(path)
+#	    file_handle <- file(path, open="rb")
+#	    distmat <- unserialize(file_handle)
+#	    ordpi <- order(as.numeric(rownames(distmat)))
+#	    close(file_handle)
+#      distmatk = distmati[rownames(distmati) %in% DFi$pid, 
+#        rownames(distmati) %in% DFi$pid, drop = FALSE]
+      distmatk = getStreamDistMatInt(ssnr,
+				DFi[DFi$netID == k, 'pid'], 'Obs')[[1]]
 	    nk <- dim(distmatk)[1]
 	    netDJ[(nsofar + 1):(nsofar + nk),(nsofar + 1):
 		    (nsofar + nk)] <- distmatk
@@ -135,7 +133,7 @@ m2LLstrbd <- function(theta, distLi,
     as.numeric(result)
 }
 
-makeSigijMats = function(DFr, xy, CorModels, theta, addfunccol, subSampIndxCol, i, j,
+makeSigijMats = function(ssnr, DFr, xy, CorModels, theta, addfunccol, subSampIndxCol, i, j,
 	distPath, useTailDownWeight = FALSE, Vlist)
 {    
 #		DFr = DF
@@ -180,20 +178,25 @@ makeSigijMats = function(DFr, xy, CorModels, theta, addfunccol, subSampIndxCol, 
     names(distordi) <- rownames(DFi)[distordi]
     names(distordj) <- rownames(DFj)[distordj]
     for(k in nIDs) {
-      workspace.name <- paste0("dist.net", k, ".RData")
-      path <- file.path(distPath, "distance", "obs",
-		    workspace.name)
-	    if(!file.exists(path)) {
-		    stop("Unable to locate required distance matrix")
-	    }
-	    file_handle <- file(path, open="rb")
-	    distmat <- unserialize(file_handle)
-	    ordpi <- order(as.numeric(rownames(distmat)))
-	    close(file_handle)
-      distmatk = distmat[rownames(distmat) %in% DFi$pid, 
-        rownames(distmat) %in% DFj$pid, drop = FALSE]
-      distmatkt = distmat[rownames(distmat) %in% DFj$pid, 
-        rownames(distmat) %in% DFi$pid, drop = FALSE]
+#      workspace.name <- paste0("dist.net", k, ".RData")
+#      path <- file.path(distPath, "distance", "obs",
+#		    workspace.name)
+#	    if(!file.exists(path)) {
+#		    stop("Unable to locate required distance matrix")
+#	    }
+#	    file_handle <- file(path, open="rb")
+#	    distmat <- unserialize(file_handle)
+#	    ordpi <- order(as.numeric(rownames(distmat)))
+#	    close(file_handle)
+#      distmatk = distmat[rownames(distmat) %in% DFi$pid, 
+#        rownames(distmat) %in% DFj$pid, drop = FALSE]
+#      distmatkt = distmat[rownames(distmat) %in% DFj$pid, 
+#        rownames(distmat) %in% DFi$pid, drop = FALSE]
+      distmat = getStreamDistMatInt(ssnr,
+				DFi[DFi$netID == k, 'pid'], 'Obs', 
+				DFj[DFj$netID == k, 'pid'], 'Obs')
+			distmatk = distmat[[1]]
+			distmatkt = distmat[[2]]
 	    nki <- dim(distmatk)[1]
 	    nkj <- dim(distmatk)[2]
 			if(nki > 0) nsofari1 = nsofari + nki

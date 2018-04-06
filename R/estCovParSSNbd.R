@@ -113,7 +113,8 @@ estCovParSSNbd = function(formula, ssn.object,
 		estCovPar <- SSN:::untrans.theta(theta = optimOut$par, scale = TH.scale)
 
     outpt = list(estCovPar = estCovPar, optimOut = optimOut, 
-      distanceList = distLi, xy = xy, mfcall = mfcall)
+      distanceList = distLi, xy = xy, mfcall = mfcall, DF = DF, 
+      ssnr = ssn.object)
     class(outpt) <- "estCovParSSNbd"
     return(outpt)
 }

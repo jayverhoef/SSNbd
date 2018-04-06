@@ -60,7 +60,9 @@ estFixEffSSNbd = function(estCovParSSN)
     
     CijList <- foreach(i = 1:(nSubSamp -1)) %:% 
 		foreach(j = (i+1):nSubSamp) %dopar% {
-			makeSigijMats(DFr = DF, xy = estCovParSSN$xy, 
+			makeSigijMats(ssnr = estCovParSSN$ssnr, 
+			DFr = estCovParSSN$DF, 
+			xy = estCovParSSN$xy, 
 			CorModels = CorModels, 
 			theta = estCovParSSN$estCovPar, 
 			addfunccol = estCovParSSN$mfcall[['addfunccol']],
