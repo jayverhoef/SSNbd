@@ -1,3 +1,10 @@
+################################################################################
+################################################################################
+#                          distUpdater
+################################################################################
+################################################################################
+
+
 distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol, i,
 	distPath, useTailDownWeight = FALSE)
 {    
@@ -82,6 +89,12 @@ distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCo
       A = A, B = B, netD = netD, W = W, FCmat = FCmat, Zs = Zs)
 }
 
+################################################################################
+################################################################################
+#                          distList
+################################################################################
+################################################################################
+
 distList = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol,
 	distPath)
 {
@@ -93,6 +106,12 @@ distList = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol,
   }
  Dlists
 }
+
+################################################################################
+################################################################################
+#                          m2LLstrbd
+################################################################################
+################################################################################
 
 m2LLstrbd <- function(theta, distLi,
 	CorModels, use.nugget, use.anisotropy, useTailDownWeight,
@@ -132,6 +151,12 @@ m2LLstrbd <- function(theta, distLi,
 
     as.numeric(result)
 }
+
+################################################################################
+################################################################################
+#                          makeSigijMats
+################################################################################
+################################################################################
 
 makeSigijMats = function(ssnr, DFr, xy, CorModels, theta, addfunccol, subSampIndxCol, i, j,
 	distPath, useTailDownWeight = FALSE, Vlist)
@@ -272,12 +297,13 @@ makeSigijMats = function(ssnr, DFr, xy, CorModels, theta, addfunccol, subSampInd
 				return(list(XViCViX = t(Vlist[[i]]$ViX) %*% Cij %*% Vlist[[j]]$ViX))
 }
 
+
 dMatsEtc = function(ssn, CorModels, dname1, DF1, xy1, 
 	dname2 = NULL, DF2 = NULL, xy2 = NULL)
 {	
-	ssn = ecp$ssn
-	dname1 ='Obs'
-	dname2 ='pred1km'
+#	ssn = ecp$ssn
+#	dname1 ='Obs'
+#	dname2 ='pred1km'
 	useTailDownWeight = FALSE
 	a.mat <- NULL
 	b.mat <- NULL
@@ -286,73 +312,176 @@ dMatsEtc = function(ssn, CorModels, dname1, DF1, xy1,
 	dist.hydro <- NULL
 	flow.con.mat = NULL
 	dist.junc = NULL
+	dist.junc.a = NULL
+	dist.junc.b = NULL
+	REs = NULL
+	REPs = NULL
 	rnames <- NULL
-		if(length(grep("tail",CorModels)) > 0 | useTailDownWeight == TRUE){
-			if(length(grep("taildown",CorModels)) > 1)
-				stop("Cannot have more than 1 tailup model")
-			nobs <- dim(DF1)[1]
+	cnames = NULL
+	# if any "tail models"
+	if(length(grep("tail",CorModels)) > 0 | useTailDownWeight == TRUE){
+			n1 = dim(DF1)[1]
+			n2 = dim(DF2)[1]
 			if(is.null(dname2)) {
-				dist.junc <- matrix(0, nrow = nobs, ncol = nobs)
-				net.zero <-  matrix(0, nrow = nobs, ncol = nobs)
+				dist.junc <- matrix(0, nrow = n1, ncol = n1)
+				net.zero <-  matrix(0, nrow = n1, ncol = n1)
 			}
 			if(!is.null(dname2)) {
 				npred = dim(DF2)[1]
-				dist.junc <- matrix(0, nrow = nobs, ncol = npred)
-				net.zero <-  matrix(0, nrow = nobs, ncol = npred)
+				dist.junc.a <- matrix(0, nrow = n1, ncol = n2)
+				dist.junc.b <- matrix(0, nrow = n2, ncol = n1)
+				net.zero <-  matrix(0, nrow = n1, ncol = npred)
 			}		
-			nsofar <- 0
+			nsofar = 0
+			nsofari = 0
+			nsofarj = 0
 			nIDs <- sort(as.integer(as.character(unique(c(DF1$netID,DF2$netID)))))
 			for(k in nIDs){
-				if(is.null(dname2))
+				if(is.null(dname2)) {
 					distmat = getStreamDistMatInt(ssn,
 						DF1[DF1$netID == k, 'pid'], dname1)[[1]]
-				if(!is.null(dname2))
+					ni <- length(distmat[1,])
+				}
+				if(!is.null(dname2)) {
 					distmat = getStreamDistMatInt(ssn,
 						DF1[DF1$netID == k, 'pid'], dname1,
 						DF2[DF2$netID == k, 'pid'], dname2)
-				rnames <- c(rnames,rownames(distmat))
-				ni <- length(distmat[1,])
-				dist.junc[(nsofar + 1):(nsofar + ni),
-					(nsofar + 1):(nsofar + ni)] <- distmat
-				net.zero[(nsofar + 1):(nsofar + ni),
-					(nsofar + 1):(nsofar + ni)] <- 1
-				nsofar <- nsofar + ni
+					ni = dim(distmat[[1]])[1]
+					nj = dim(distmat[[1]])[2]
+				}
+				rnames <- c(rnames,rownames(distmat[[1]]))
+				cnames = c(cnames,colnames(distmat[[1]]))
+				if(is.null(dname2)) {
+					dist.junc[(nsofar + 1):(nsofar + ni),
+						(nsofar + 1):(nsofar + ni)] <- distmat
+					net.zero[(nsofar + 1):(nsofar + ni),
+						(nsofar + 1):(nsofar + ni)] <- 1
+					nsofar <- nsofar + ni
+				}
+				if(!is.null(dname2)) {
+					dist.junc.a[(nsofari + 1):(nsofari + ni),
+						(nsofarj + 1):(nsofarj + nj)] <- distmat[[1]]
+					dist.junc.b[(nsofarj + 1):(nsofarj + nj),
+						(nsofari + 1):(nsofari + ni)] <- distmat[[2]]
+					net.zero[(nsofari + 1):(nsofari + ni),
+						(nsofarj + 1):(nsofarj + nj)] <- 1
+				}
 			}
-			rownames(dist.junc) = colnames(dist.junc) = rnames
-			rownames(net.zero) = colnames(net.zero) = rnames
-			# maximum distance to common junction between two sites
-			a.mat <- pmax(dist.junc,t(dist.junc))
-			# minimum distance to common junction between two sites
-			b.mat <- pmin(dist.junc,t(dist.junc))
+			if(is.null(dname2)) {
+				rownames(dist.junc) = rnames
+				colnames(dist.junc) = cnames
+			}
+			if(!is.null(dname2)) {
+				rownames(dist.junc.a) = rnames
+				colnames(dist.junc.a) = cnames
+				rownames(dist.junc.b) = cnames
+				colnames(dist.junc.b) = rnames
+			}
+
+			rownames(net.zero) = rnames
+			colnames(net.zero) = cnames
+			if(is.null(dname2)) {
+				# maximum distance to common junction between two sites
+				a.mat <- pmax(dist.junc,t(dist.junc))
+				# minimum distance to common junction between two sites
+				b.mat <- pmin(dist.junc,t(dist.junc))
+				# hydrological distance
+				dist.hydro <- as.matrix(dist.junc + t(dist.junc))*net.zero
+			}
+			if(!is.null(dname2)) {
+				# creat A matrix (longest distance to junction of two points)
+    		a.mat <- pmax(dist.junc.a,t(dist.junc.b))
+    		# creat B matrix (shorted distance to junction of two points)
+    		b.mat <- pmin(dist.junc.a,t(dist.junc.b))
+    		# get hydrologic distance
+    		dist.hydro <- as.matrix(dist.junc.a + t(dist.junc.b))
+			}
 			# binary flow connection matrix
 			flow.con.mat <- 1 - (b.mat > 0)*1
-			# hydrological distance
-			dist.hydro <- as.matrix(dist.junc + t(dist.junc))*net.zero
-                        flow.con.mat <- 1 - (b.mat > 0)*1
-			addfunccol <- ecp$mfcall$addfunccol
-			w.matrix <- sqrt(pmin(outer(DF1[,addfunccol],
-				rep(1, times = nobs)),
-				t(outer(DF1[,addfunccol],rep(1, times = nobs)))) /
-				pmax(outer(DF1[,addfunccol],rep(1, times = nobs)),
-				t(outer(DF1[,addfunccol],rep(1, times = nobs))))) *
-				flow.con.mat*net.zero
-		}
-		
-		Edis = SSN:::distGeo(xy1[,1], xy1[,2], xy1[,1], xy1[,2])
-		rownames(Edis) = colnames(Edis) = rnames
 
+			addfunccol <- ecp$mfcall$addfunccol
+			if(is.null(dname2)) {
+				DF2 = DF1
+				n2 = n1
+			}
+			w.matrix <- sqrt(pmin(outer(DF1[,addfunccol], rep(1, times = n2)),
+				t(outer(DF2[,addfunccol],rep(1, times = n1)))) /
+				pmax(outer(DF1[,addfunccol],rep(1, times = n2)),
+				t(outer(DF2[,addfunccol],rep(1, times = n1)))))*flow.con.mat*net.zero
+		}
+# end "tail model parts
+# if any random effects
 		REind <- which(names(DF1) %in% CorModels)
 		if(length(REind)) {
-			REs <- list()
-			REnames <- sort(names(datao)[REind])
-			## model matrix for a RE factor
-      for(ii in 1:length(REind)) REs[[REnames[ii]]] <-
-				model.matrix(~DF1[,REnames[ii]] - 1)
-				rownames(REs[[REnames[ii]]]) <- DF1[,"pid"]
-			## corresponding block matrix
-			for(ii in 1:length(REind)) REs[[ii]] <- REs[[ii]] %*% t(REs[[ii]])
-		}
-	return(list(dist.junc = dist.junc, net.zero = net.zero, a.mat = a.mat,
-		b.mat = b.mat, dist.hydro = dist.hydro, w.matrix = w.matrix, Edis = Edis,
-		REs = REs))
+				REs <- list()
+				REnames <- sort(names(DF1)[REind])
+				## model matrix for a RE factor
+				for(ii in 1:length(REind)) REs[[REnames[ii]]] <-
+					model.matrix(~DF1[,REnames[ii]] - 1)
+					rownames(REs[[REnames[ii]]]) <- DF1[,"pid"]
+				## corresponding block matrix
+				for(ii in 1:length(REind)) REs[[ii]] <- REs[[ii]] %*% t(REs[[ii]])
+			if(!is.null(dname2)) {
+					for(ii in 1:length(REind)) if(any(is.na(DF2[,REnames[ii]])))
+					 stop("Cannot having missing values when creating random effects")
+					REOs <- list()
+					REPs <- list()
+					ObsSimDF <- DF1
+					PredSimDF <- DF2
+					## model matrix for a RE factor
+					for(ii in 1:length(REnames)){
+						#we'll add "o" to observed levels and "p" to prediction
+						# levels so create all possible levels
+						plevels <- unique(c(levels(PredSimDF[,REnames[[ii]]]),
+							paste("o",levels(ObsSimDF[,REnames[[ii]]]),sep = ""),
+							paste("p",levels(PredSimDF[,REnames[[ii]]]),sep = "")))
+						# sites with prediction levels same as observation levels
+						pino <- PredSimDF[,REnames[[ii]]] %in% ObsSimDF[,REnames[[ii]]]
+						#add "o" to observed levels
+						ObsSimDF[,REnames[[ii]]] <- paste("o",
+							ObsSimDF[,REnames[[ii]]], sep = "")
+						ObsSimDF[,REnames[[ii]]] <- as.factor(as.character(
+							ObsSimDF[,REnames[[ii]]]))
+						#add all possible levels to prediction data frame
+						levels(PredSimDF[,REnames[[ii]]]) <- plevels
+								# add "o" to prediction sites with observation levels
+						if(any(pino)) PredSimDF[pino,REnames[[ii]]] <- paste("o",
+							PredSimDF[pino,REnames[[ii]]], sep = "")
+						# add "p" to all predicition sites without observation levels
+						if(any(!pino)) PredSimDF[!pino,REnames[[ii]]] <- paste("p",
+							PredSimDF[!pino,REnames[[ii]]], sep = "")
+						PredSimDF[,REnames[[ii]]] <- as.factor(as.character(
+							PredSimDF[,REnames[[ii]]]))
+						# now get down to just levels with "o" & "p" added
+						blevels <- unique(c(levels(ObsSimDF[,REnames[[ii]]]),
+							levels(PredSimDF[,REnames[[ii]]])))
+						ObsSimDF[,REnames[[ii]]] <- factor(ObsSimDF[,REnames[[ii]]],
+							levels = blevels, ordered = FALSE)
+						PredSimDF[,REnames[[ii]]] <- factor(PredSimDF[,REnames[[ii]]],
+							levels = blevels, ordered = FALSE)
+						# now ordering of factors in Z matrices should be compatible
+						# with obs x obs Z matrices
+						REOs[[ii]] <- model.matrix(~ObsSimDF[,
+							REnames[[ii]]] - 1)
+						REPs[[ii]] <- model.matrix(~PredSimDF[,
+							REnames[[ii]]] - 1)
+						rownames(REOs[[ii]]) <- DF1[,"pid"]
+						rownames(REPs[[ii]]) <- DF2[,"pid"]
+						if(any(rownames(REs[[ii]])!=rownames(a.mat)))
+						stop("rownames RE for obs do not match rownames of a.mat")
+						if(any(rownames(REPs[[ii]])!=colnames(a.mat)))
+						stop("rownames RE for preds do not match colnames of a.mat")
+					}
+					## corresponding block matrix
+					for(ii in 1:length(REnames)) REPs[[ii]] <-
+						REOs[[ii]] %*% t(REPs[[ii]])
+				}
+			}
+# end random effects
+
+	return(list(dist.junc = dist.junc, dist.junc.a = dist.junc.a, 
+		dist.junc.b = dist.junc.b, net.zero = net.zero, a.mat = a.mat,
+		b.mat = b.mat, dist.hydro = dist.hydro, w.matrix = w.matrix,
+		REs = REs, REPs = REPs))
 }
+
