@@ -37,7 +37,7 @@ summary.estCovParSSNbd <-
   outpt
 }
 
-#' Print S3 method for estCovParSSNbd
+#' Print method for estCovParSSNbd
 #'
 #' @param x
 #' @param ...
@@ -47,7 +47,7 @@ print.estCovParSSNbd <- function(x,...) {
     print(summary(x,...))
 }
 
-#' Print S3 method for estCovParSSNbd
+#' Print method for estCovParSSNbd
 #'
 #' @param x
 #'
