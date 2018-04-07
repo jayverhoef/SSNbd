@@ -298,7 +298,7 @@ makeSigijMats = function(ssnr, DFr, xy, CorModels, theta, addfunccol, subSampInd
 }
 
 
-dMatsEtc = function(ssn, CorModels, dname1, DF1, xy1, 
+dMatsEtc = function(ssn, CorModels, dname1, DF1, xy1, addfunccol = NULL,
 	dname2 = NULL, DF2 = NULL, xy2 = NULL)
 {	
 #	ssn = ecp$ssn
@@ -399,7 +399,6 @@ dMatsEtc = function(ssn, CorModels, dname1, DF1, xy1,
 			# binary flow connection matrix
 			flow.con.mat <- 1 - (b.mat > 0)*1
 
-			addfunccol <- ecp$mfcall$addfunccol
 			if(is.null(dname2)) {
 				DF2 = DF1
 				n2 = n1
