@@ -2,7 +2,7 @@
 % Please edit documentation in R/summary.estCovParSSNbd.R
 \name{print.estCovParSSNbd}
 \alias{print.estCovParSSNbd}
-\title{Print S3 method for estCovParSSNbd}
+\title{Print method for estCovParSSNbd}
 \usage{
 \method{print}{estCovParSSNbd}(x, ...)
 }
@@ -10,5 +10,5 @@
 \item{...}{}
 }
 \description{
-Print S3 method for estCovParSSNbd
+Print method for estCovParSSNbd
 }

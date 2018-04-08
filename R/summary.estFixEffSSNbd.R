@@ -8,7 +8,7 @@
 #'
 #' @param object of class \code{estFixEffSSNbd}
 #'
-#' @return Fixed estimates table.
+#' @return Table of estimates for fixed effects.
 #'
 #' @author Erin Peterson
 #' @seealso \code{\link{estFixEffSSNbd}}

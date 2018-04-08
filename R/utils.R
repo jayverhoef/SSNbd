@@ -203,38 +203,27 @@ makeSigijMats = function(ssnr, DFr, xy, CorModels, theta, addfunccol, subSampInd
     names(distordi) <- rownames(DFi)[distordi]
     names(distordj) <- rownames(DFj)[distordj]
     for(k in nIDs) {
-#      workspace.name <- paste0("dist.net", k, ".RData")
-#      path <- file.path(distPath, "distance", "obs",
-#		    workspace.name)
-#	    if(!file.exists(path)) {
-#		    stop("Unable to locate required distance matrix")
-#	    }
-#	    file_handle <- file(path, open="rb")
-#	    distmat <- unserialize(file_handle)
-#	    ordpi <- order(as.numeric(rownames(distmat)))
-#	    close(file_handle)
-#      distmatk = distmat[rownames(distmat) %in% DFi$pid, 
-#        rownames(distmat) %in% DFj$pid, drop = FALSE]
-#      distmatkt = distmat[rownames(distmat) %in% DFj$pid, 
-#        rownames(distmat) %in% DFi$pid, drop = FALSE]
-      distmat = getStreamDistMatInt(ssnr,
-				DFi[DFi$netID == k, 'pid'], 'Obs', 
-				DFj[DFj$netID == k, 'pid'], 'Obs')
-			distmatk = distmat[[1]]
-			distmatkt = distmat[[2]]
-	    nki <- dim(distmatk)[1]
-	    nkj <- dim(distmatk)[2]
-			if(nki > 0) nsofari1 = nsofari + nki
-			if(nkj > 0) nsofarj1 = nsofarj + nkj
+			if(sum(DFi$netID == k) > 0 & sum(DFj$netID == k) > 0) {
+				distmat = getStreamDistMatInt(ssnr,
+					DFi[DFi$netID == k, 'pid'], 'Obs', 
+					DFj[DFj$netID == k, 'pid'], 'Obs')
+				distmatk = distmat[[1]]
+				distmatkt = distmat[[2]]
+			}
+	    nki <- sum(DFi$netID == k)
+	    nkj <- sum(DFj$netID == k)
+			nsofari1 = nsofari + nki
+			nsofarj1 = nsofarj + nkj
 			if(nki > 0 & nkj > 0) {
 			  netDJ[(nsofari+1):nsofari1,(nsofarj+1):nsofarj1] <- distmatk
 			  net0[(nsofari+1):nsofari1,(nsofarj+1):nsofarj1] <- 1
 			  netDJt[(nsofarj+1):nsofarj1,(nsofari+1):nsofari1] <- distmatkt
 			  net0t[(nsofarj+1):nsofarj1,(nsofari+1):nsofari1] <- 1
-
 			}
-      rn = c(rn,rownames(distmatk))
-      cn = c(cn,colnames(distmatk))
+			if(sum(DFi$netID == k) > 0)
+				rn = c(rn,rownames(DFi[DFi$netID == k,,drop = F]))
+			if(sum(DFj$netID == k) > 0)
+				cn = c(cn,rownames(DFj[DFj$netID == k,,drop = F]))
 	    nsofari = nsofari1
 			nsofarj = nsofarj1
     }

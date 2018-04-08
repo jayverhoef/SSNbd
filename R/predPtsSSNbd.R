@@ -26,9 +26,6 @@ predSSNbdNN <- function(ecp, efe, predsID, nNN)
 	nobs <- dim(d1)[1]
 	CorModels <- as.character(ecp$mfcall$CorModels)
 	CorModels = CorModels[2:length(CorModels)]
-#	useTailDownWeight <-object$args$useTailDownWeight
-#	  REind <- which(names(data) %in% CorModels)
-	REs <- names(d1)[which(names(d1) %in% CorModels)]
   dp = ecp$ssnr@predpoints@SSNPoints[[
 		which(ecp$ssnr@predpoints@ID == predsID)]]@point.data
 	np = dim(dp)[1]
@@ -36,7 +33,6 @@ predSSNbdNN <- function(ecp, efe, predsID, nNN)
 		which(ecp$ssnr@predpoints@ID == predsID)]]@point.coords
 	nearxy = knn(data = coords, query = coordsp, k = nNN)
 	storePreds = matrix(NA, nrow = np, ncol = 2)
-	i = 2
 		for(i in 1:np) {
 		DF1 = d1[nearxy$nn.idx[i,],]
 		xy1 = coords[nearxy$nn.idx[i,],]
@@ -45,7 +41,6 @@ predSSNbdNN <- function(ecp, efe, predsID, nNN)
 		xy1 = xy1[distord,]
 		DF2 = dp[i,]
 		xy2 = coordsp[i,, drop = FALSE]
-		#undebug(SSNbd:::dMatsEtc)
 		dmts = dMatsEtc(ecp$ssn, CorModels, 'Obs', DF1, xy1, ecp$mfcall$addfunccol)
 		V <- SSN:::makeCovMat(theta = theta, dist.hydro = dmts$dist.hydro,
 				a.mat = dmts$a.mat, b.mat = dmts$b.mat, w.matrix = dmts$w.matrix,
@@ -75,21 +70,23 @@ predSSNbdNN <- function(ecp, efe, predsID, nNN)
 		# get the sum of partial sills
 		sumparsil <- sum(theta[attr(theta,"type") == "parsill"])
 		Vi = solve(V)
+		qrV = qr(V)
 		covb <- efe$covB
 		z <- DF1[, response.col]
 		n <- length(z)
 		p <- dim(Xp)[2]
-
-		parsilvec <- rep(sumparsil, times = length(Vpred[1,]))
-
-
-			M <- rbind(Vpred, t(Xp), parsilvec)
-			XXSiXi <- Xobs %*% covb
-			XSi <- t(Xobs) %*% Vi
-			pred.out <- t(apply(M, 2, SSN:::UK4Apply, covb = covb,
-				XXSiXi = XXSiXi, XSi = XSi, Vi = Vi, z = z, n = n, p = p))
-			storePreds[i,] = pred.out
-		}
-		storePreds
+    Viz = solve(qrV, z)
+    Vic = solve(qrV, Vpred)
+    
+		pred.out <- matrix(NA, nrow = 1, ncol = 2)
+		pred.out[1,1] = sum(as.vector((Viz)) * Vpred) +
+			Xp %*% efe$betaHat - t(Vic) %*% Xobs %*% efe$betaHat
+			
+		pred.out[1,2] = sqrt(sumparsil - sum(Vic * Vpred) +
+			sum((covb %*% t(Xp))*t(Xp)) - 2*sum((covb %*% t(Xp))*(t(Xobs) %*% Vic)) +
+			sum((covb %*% t(Xobs) %*% Vic)*(t(Xobs) %*% Vic)))		
+		storePreds[i,] = pred.out	
+	}
+	storePreds
 }
 

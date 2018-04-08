@@ -2,7 +2,7 @@
 % Please edit documentation in R/summary.estCovParSSNbd.R
 \name{print.summary.estCovParSSNbd}
 \alias{print.summary.estCovParSSNbd}
-\title{Print S3 method for estCovParSSNbd}
+\title{Print method for estCovParSSNbd}
 \usage{
 \method{print}{summary.estCovParSSNbd}(x, digits = max(3L, getOption("digits")
   - 3L))
@@ -11,5 +11,5 @@
 \item{x}{}
 }
 \description{
-Print S3 method for estCovParSSNbd
+Print method for estCovParSSNbd
 }
