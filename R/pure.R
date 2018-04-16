@@ -1,15 +1,15 @@
 #-------------------------------------------------------------------------------
 #
-#           predSSNbdNN
+#           pure
 #
 #-------------------------------------------------------------------------------
 
-#' predictions with fast methods for big data with SSN
+#' prediction of unobserved responses with fast methods for big data with SSN
 #'
-#' Predictions fixed effects with fast methods for big data with SSN
+#' Prediction of unobserved responses with fast methods for big data with SSN
 #'
-#' @param ecp object from estCovParSSNbd function.
-#' @param efe object from estFixEffSSNbd function
+#' @param ecp object from cope function.
+#' @param efe object from fefe function
 #' @param predsID name of prediction data set in ssn object (passed with ecp)
 #' @param nNN number of nearest neighbors for predictions 
 #'
@@ -18,7 +18,7 @@
 #' @author Jay Ver Hoef
 #' @export
 #' @importFrom nabor knn
-predSSNbdNN <- function(ecp, efe, predsID, nNN)
+pure <- function(ecp, efe, predsID, nNN)
 {
 	d1 <- ecp$ssnr@obspoints@SSNPoints[[1]]@point.data
 	coords <- ecp$ssnr@obspoints@SSNPoints[[1]]@point.coords

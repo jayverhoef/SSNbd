@@ -1,12 +1,12 @@
 #-------------------------------------------------------------------------------
 #
-#           estFixEffSSNbd
+#           fefe
 #
 #-------------------------------------------------------------------------------
 
-#' estimates fixed effects with fast methods for big data with SSN
+#' fixed effects estimation with fast methods for big data with SSN
 #'
-#' estimates fixed effects with fast methods for big data with SSN
+#' fixed effects estimates with fast methods for big data with SSN
 #'
 #' @param estCovParSSN an object of class "estCovParSSNbd" created
 #'   from estimating the covariance parameters.
@@ -17,7 +17,7 @@
 #' @author Jay Ver Hoef
 #' @export
 
-estFixEffSSNbd = function(estCovParSSN)
+fefe = function(estCovParSSN)
 {
 			CorModels = as.list(estCovParSSN$mfcall[['CorModels']])
 			CorModels = CorModels[2:length(CorModels)]

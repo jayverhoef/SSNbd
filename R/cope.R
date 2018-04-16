@@ -1,12 +1,12 @@
 #-------------------------------------------------------------------------------
 #
-#           estCovParSSNbd
+#           cope
 #
 #-------------------------------------------------------------------------------
 
-#' estimates covariance parameters with fast methods for big data with SSN
+#' covariance parameter estimates with fast methods for big data with SSN
 #'
-#' estimates covariance parameters with fast methods for big data with SSN
+#' covariance parameter estimates with fast methods for big data with SSN
 #'
 #' @param formula an object of class "formula" (or one that can be 
 #'   coerced to that class): a symbolic description of the model to be 
@@ -39,12 +39,17 @@
 #' @author Jay Ver Hoef
 #' @export
 #' @importFrom filematrix fm.open fm.load
+#' @importFrom doParallel registerDoParallel
+#' @importFrom parallel makeCluster stopCluster
+#' @importFrom foreach registerDoSEQ 
 
-estCovParSSNbd = function(formula, ssn.object, 
+cope = function(formula, ssn.object, 
 	CorModels = c("Exponential.tailup", "Exponential.taildown", 
   "Exponential.Euclid"), use.nugget = TRUE, addfunccol = NULL,
-	EstMeth = "REML", subSampIndxCol)
+	EstMeth = "REML", subSampIndxCol, no.cores = 1, parallel = FALSE)
 {
+#	  cl <- makeCluster(no.cores)
+    registerDoParallel(no.cores)
     DF = getSSNdata.frame(ssn.object)
     ng = max(DF[,subSampIndxCol])
     ordi = order(DF[,subSampIndxCol], 
@@ -52,6 +57,9 @@ estCovParSSNbd = function(formula, ssn.object,
     DF = DF[ordi,]
     xy = ssn.object@obspoints@SSNPoints[[1]]@point.coords
     xy = xy[ordi,]
+    REind <- which(names(DF) %in% CorModels)
+    if(length(REind) > 0 & length(apply(is.na(DF[REind]),1,any) > 0)) 
+			stop("Missing values for random effects are not allowed.")
     cl = match.call()
     mf = match.call(expand.dots = FALSE)
     mfcall = mf
@@ -74,7 +82,7 @@ estCovParSSNbd = function(formula, ssn.object,
     X = model.matrix(mt, mf, contrasts)
     distLi = distList(ssn.object, DF, y, X, xy, CorModels = CorModels, 
 			addfunccol = addfunccol, subSampIndxCol = subSampIndxCol, 
-			distPath = ssn.object@path)
+			distPath = ssn.object@path, parallel = parallel)
     #initial estimate of theta
     theta = NULL
     for(i in 1:ng) {
@@ -116,5 +124,8 @@ estCovParSSNbd = function(formula, ssn.object,
       distanceList = distLi, xy = xy, mfcall = mfcall, DF = DF, 
       ssnr = ssn.object)
     class(outpt) <- "estCovParSSNbd"
+    
+#    stopCluster(cl)
+#		registerDoSEQ()
     return(outpt)
 }

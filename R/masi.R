@@ -4,9 +4,9 @@
 #
 #-------------------------------------------------------------------------------
 
-#' creates a subsample index for a SpatialStreamNetwork object
+#' make a subsample index for a SpatialStreamNetwork object
 #'
-#' creates a subsample index for a SpatialStreamNetwork object so that 
+#' make a subsample index for a SpatialStreamNetwork object so that 
 #'   it can be used with fast methods for big data
 #'
 #' @param ssn.object a SpatialStreamNetwork object, usually imported 
@@ -21,7 +21,7 @@
 #' @author Jay Ver Hoef
 #' @export
 
-subSampIndxSSN = function(ssn.object, nIndx)
+masi = function(ssn.object, nIndx)
 {
   xy = ssn.object@obspoints@SSNPoints[[1]]@point.coords
   xychar = paste0(xy[,1],xy[,2])

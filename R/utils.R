@@ -8,6 +8,8 @@
 distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol, i,
 	distPath, useTailDownWeight = FALSE)
 {    
+	  DFr = DFr[rownames(DFr) %in% rownames(X),]
+	  xy = xy[rownames(xy) %in% rownames(X),]
     DFi = DFr[DFr[subSampIndxCol] == i,] 
     yi = y[DFr[subSampIndxCol] == i]
     Xi = X[DFr[subSampIndxCol] == i,]
@@ -21,18 +23,6 @@ distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCo
     DFi = DFi[distord,]
     names(distord) <- rownames(DFi)[distord]
     for(k in nIDs) {
-#			workspace.name <- "dist.net2.bmat"
-#			workspace.name <- paste0("dist.net", k, ".bmat")
-#      workspace.name <- paste("dist.net", k, ".RData", sep = "")
-#      path <- file.path(distPath, "distance", "obs",
-#		    workspace.name)
-#	    distMatPoint = fm.open(path)
-#	    file_handle <- file(path, open="rb")
-#	    distmat <- unserialize(file_handle)
-#	    ordpi <- order(as.numeric(rownames(distmat)))
-#	    close(file_handle)
-#      distmatk = distmati[rownames(distmati) %in% DFi$pid, 
-#        rownames(distmati) %in% DFi$pid, drop = FALSE]
       distmatk = getStreamDistMatInt(ssnr,
 				DFi[DFi$netID == k, 'pid'], 'Obs')[[1]]
 	    nk <- dim(distmatk)[1]
@@ -43,7 +33,7 @@ distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCo
 	    nsofar <- nsofar + nk
     }
     xc = xy[DFr[subSampIndxCol] == i,1]
-    yc = xy[DFr[subSampIndxCol] == i,1]
+    yc = xy[DFr[subSampIndxCol] == i,2]
     rownames(netDJ) = rn
     colnames(netDJ) = rn
     rownames(net0) = rn
@@ -96,14 +86,23 @@ distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCo
 ################################################################################
 
 distList = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol,
-	distPath)
+	distPath, parallel = parallel)
 {
   nResamp = max(DFr[,subSampIndxCol])
+  if(parallel == TRUE)
   Dlists = foreach(i=1:nResamp) %dopar% {
     distUpdater(ssnr = ssnr, DFr = DFr, y = y, X = X, 
     xy = xy, CorModels = CorModels,  addfunccol = addfunccol, 
     subSampIndxCol = subSampIndxCol, i = i, distPath = distPath)
   }
+  if(parallel == FALSE) {
+	Dlists = vector("list", nResamp) 
+	for(i in 1:nResamp)
+		Dlists[[i]] = distUpdater(ssnr = ssnr, DFr = DFr, y = y, X = X, 
+    xy = xy, CorModels = CorModels,  addfunccol = addfunccol, 
+    subSampIndxCol = subSampIndxCol, i = i, distPath = distPath)
+	}
+
  Dlists
 }
 
