@@ -36,12 +36,12 @@ fefe = function(estCovParSSN)
         y.col= estCovParSSN$distanceList[[i]]$yc,
         useTailDownWeight = FALSE,
         CorModels = CorModels,
-        use.nugget = estCovParSSN$mfcall[['use.nugget']],
+        use.nugget = TRUE,
         use.anisotropy = FALSE,
-        REs = estCovParSSN$distanceList[[i]]$Zs)
+        REs = estCovParSSN$distanceList[[i]]$Zsi)
         qrV = qr(V)
-        list(V = V, qrV = qrV, ViX = solve(qrV,
-          estCovParSSN$distanceList[[i]]$X),
+        list(V = V, qrV = qrV, y = estCovParSSN$distanceList[[i]]$y,
+          ViX = solve(qrV,estCovParSSN$distanceList[[i]]$X),
           Viy = solve(qrV,estCovParSSN$distanceList[[i]]$y),
           logdet = sum(log(abs(diag(qr.R(qrV))))),
           XViX = crossprod(estCovParSSN$distanceList[[i]]$X,
@@ -66,7 +66,7 @@ fefe = function(estCovParSSN)
 			CorModels = CorModels,
 			theta = estCovParSSN$estCovPar,
 			addfunccol = estCovParSSN$mfcall[['addfunccol']],
-			subSampIndxCol = estCovParSSN$mfcall[['subSampIndxCol']], i, j,
+			subSampIndxCol = estCovParSSN$mfcall[['partIndxCol']], i, j,
 			distPath = eval(estCovParSSN$mfcall[['ssn.object']])@path,
 			useTailDownWeight = FALSE, Vlist = Vlist)
 		}
@@ -75,10 +75,9 @@ fefe = function(estCovParSSN)
 		Wxx = Reduce('+',lapply(CijList,function(x){x[['XViCViX']]}))
 
 		Sxxi = solve(Sxx)
-                covB = Sxxi + 2*Sxxi %*% Wxx %*% Sxxi
-
-
-                outpt <-list(betaHat = betaHat, covB = covB, Vlist = Vlist)
-                class(outpt) <- "estFixEffSSNbd"
-                return(outpt)
+    covB = Sxxi + Sxxi %*% Wxx %*% Sxxi
+    
+    outpt <-list(betaHat = betaHat, covB = covB, Vlist = Vlist)
+    class(outpt) <- "estFixEffSSNbd"
+    return(outpt)
 }

@@ -46,19 +46,17 @@
 cope = function(formula, ssn.object, 
 	CorModels = c("Exponential.tailup", "Exponential.taildown", 
   "Exponential.Euclid"), use.nugget = TRUE, addfunccol = NULL,
-	EstMeth = "REML", subSampIndxCol, no.cores = 1, parallel = FALSE)
+	EstMeth = "REML", partIndxCol, parallel = FALSE)
 {
-#	  cl <- makeCluster(no.cores)
-    registerDoParallel(no.cores)
     DF = getSSNdata.frame(ssn.object)
-    ng = max(DF[,subSampIndxCol])
-    ordi = order(DF[,subSampIndxCol], 
+    ng = max(DF[,partIndxCol])
+    ordi = order(DF[,partIndxCol], 
       as.integer(as.character(DF$netID)), DF$pid)
     DF = DF[ordi,]
     xy = ssn.object@obspoints@SSNPoints[[1]]@point.coords
     xy = xy[ordi,]
     REind <- which(names(DF) %in% CorModels)
-    if(length(REind) > 0 & length(apply(is.na(DF[REind]),1,any) > 0)) 
+    if(length(REind) > 0 & sum(apply(is.na(DF[REind]),2,any)) > 0) 
 			stop("Missing values for random effects are not allowed.")
     cl = match.call()
     mf = match.call(expand.dots = FALSE)
@@ -73,38 +71,35 @@ cope = function(formula, ssn.object,
     mf = eval(mf, DF)
     mt = attr(mf, "terms")
     y = model.response(mf, "numeric")
+    ind = rownames(DF) %in% names(y)
     offset = as.vector(model.offset(mf))
     if (!is.null(offset)) {
         if (length(offset) != NROW(y)) 
             stop(gettextf("number of offsets is %d, should equal %d (number of observations)", 
                 length(offset), NROW(y)), domain = NA)
     }
-    X = model.matrix(mt, mf, contrasts)
-    distLi = distList(ssn.object, DF, y, X, xy, CorModels = CorModels, 
-			addfunccol = addfunccol, subSampIndxCol = subSampIndxCol, 
+		#design matrix
+		X <- model.matrix(mf, DF)
+    #design matrices for random effects
+    Zs <- NULL
+      REind <- which(names(DF) %in% CorModels)
+      if(length(REind)) {
+        Zs <- list()
+        REnames <- sort(names(DF)[REind])
+        ## model matrix for a RE factor
+        for(ii in 1:length(REind)) {
+          DF[,REnames[ii]] = as.factor(as.character(DF[,REnames[ii]]))
+          Zs[[REnames[ii]]] = model.matrix(~DF[,REnames[ii]] - 1)
+          rownames(Zs[[REnames[ii]]]) = DF$pid
+        }
+        names(Zs) = REnames
+      }
+    #X = model.matrix(mt, mf, contrasts)
+    distLi = distList(ssn.object, DF, y, X, Zs, xy, CorModels = CorModels, 
+			addfunccol = addfunccol, subSampIndxCol = partIndxCol, 
 			distPath = ssn.object@path, parallel = parallel)
     #initial estimate of theta
-    theta = NULL
-    for(i in 1:ng) {
-      yi = distLi[[i]]$y
-      Xi = distLi[[i]]$X
-      netDi = distLi[[i]]$netD
-      Zsi = distLi[[i]]$Zs
-      xci = distLi[[i]]$xc
-      yci = distLi[[i]]$yc
-	    theta = cbind(theta, SSN:::theta.ini(z = yi, X = Xi,
-	      CorModels= CorModels,
-	      use.nugget = TRUE, use.anisotropy = FALSE,
-	      dist.hydro.data = netDi, x.dat = xci,
-	      y.dat = yci, REs = Zsi))
-    }
-    theta = apply(theta,1,mean)
-		attributes(theta) = attributes(SSN:::theta.ini(z = yi, X = Xi,
-				CorModels= CorModels,
-				use.nugget = TRUE, use.anisotropy = FALSE,
-				dist.hydro.data = netDi, x.dat = xci,
-				y.dat = yci, REs = Zsi))
-		attributes(theta) ## scale, type, terms
+    theta = thetainibd(distLi, ng, CorModels)
 		TH.scale <- attributes(theta)$scale
 		TH.type <- attributes(theta)$type
 		TH.terms <- attributes(theta)$terms
@@ -121,7 +116,7 @@ cope = function(formula, ssn.object,
 		estCovPar <- SSN:::untrans.theta(theta = optimOut$par, scale = TH.scale)
 
     outpt = list(estCovPar = estCovPar, optimOut = optimOut, 
-      distanceList = distLi, xy = xy, mfcall = mfcall, DF = DF, 
+      distanceList = distLi, xy = xy[ind,], mfcall = mfcall, DF = DF[ind,], ind = ind,
       ssnr = ssn.object)
     class(outpt) <- "estCovParSSNbd"
     

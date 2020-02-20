@@ -6,8 +6,7 @@
 \usage{
 cope(formula, ssn.object, CorModels = c("Exponential.tailup",
   "Exponential.taildown", "Exponential.Euclid"), use.nugget = TRUE,
-  addfunccol = NULL, EstMeth = "REML", subSampIndxCol, no.cores = 1,
-  parallel = FALSE)
+  addfunccol = NULL, EstMeth = "REML", partIndxCol, parallel = FALSE)
 }
 \arguments{
 \item{formula}{an object of class "formula" (or one that can be 

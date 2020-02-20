@@ -4,8 +4,8 @@
 \alias{createBigDistMat}
 \title{Calculate Hydrologic Distances for a large SpatialStreamNetwork Object}
 \usage{
-createBigDistMat(ssn, predpts = NULL, o.write = FALSE, amongpreds = FALSE,
-  no.cores = 1)
+createBigDistMat(ssn, predpts = NULL, o.write = FALSE,
+  amongpreds = FALSE, no.cores = 1)
 }
 \arguments{
 \item{ssn}{\link{SpatialStreamNetwork-class} object}

@@ -4,9 +4,10 @@
 \alias{estCovParSSNbd_orig}
 \title{estimates covariance parameters with fast methods for big data with SSN}
 \usage{
-estCovParSSNbd_orig(formula, ssn.object, CorModels = c("Exponential.tailup",
-  "Exponential.taildown", "Exponential.Euclid"), use.nugget = TRUE,
-  addfunccol = NULL, EstMeth = "REML", subSampIndxCol)
+estCovParSSNbd_orig(formula, ssn.object,
+  CorModels = c("Exponential.tailup", "Exponential.taildown",
+  "Exponential.Euclid"), use.nugget = TRUE, addfunccol = NULL,
+  EstMeth = "REML", subSampIndxCol)
 }
 \arguments{
 \item{formula}{an object of class "formula" (or one that can be 

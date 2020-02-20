@@ -4,7 +4,8 @@
 \alias{getStreamDistMatInt}
 \title{Extracts downstream-only hydrologic distances for two vectors of pids}
 \usage{
-getStreamDistMatInt(ssn, pidset1, dataID1, pidset2 = NULL, dataID2 = NULL)
+getStreamDistMatInt(ssn, pidset1, dataID1, pidset2 = NULL,
+  dataID2 = NULL)
 }
 \arguments{
 \item{ssn}{a SpatialStreamNetwork object created using the SSN package}

@@ -4,8 +4,8 @@
 \alias{print.summary.estCovParSSNbd}
 \title{Print method for estCovParSSNbd}
 \usage{
-\method{print}{summary.estCovParSSNbd}(x, digits = max(3L, getOption("digits")
-  - 3L))
+\method{print}{summary.estCovParSSNbd}(x, digits = max(3L,
+  getOption("digits") - 3L))
 }
 \arguments{
 \item{x}{}

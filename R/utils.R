@@ -5,7 +5,7 @@
 ################################################################################
 
 
-distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol, i,
+distUpdater = function(ssnr, DFr, y, X, Zs, xy, CorModels, addfunccol, subSampIndxCol, i,
 	distPath, useTailDownWeight = FALSE)
 {    
 	  DFr = DFr[rownames(DFr) %in% rownames(X),]
@@ -13,6 +13,14 @@ distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCo
     DFi = DFr[DFr[subSampIndxCol] == i,] 
     yi = y[DFr[subSampIndxCol] == i]
     Xi = X[DFr[subSampIndxCol] == i,]
+    if(!is.null(Zs)) {
+      Zsi = vector('list', length(Zs))
+      for(j in 1:length(Zs)) {
+        Zsi[[j]] = Zs[[j]][DFr[subSampIndxCol] == i,]
+        Zsi[[j]] = tcrossprod(Zsi[[j]])
+      }
+      names(Zsi) = names(Zs)
+    }
     nIDs <- sort(as.integer(as.character(unique(DFi[,"netID"]))))
     netDJ <- matrix(0, nrow = length(DFi[,1]), ncol = length(DFi[,1]))
     net0 <-  matrix(0, nrow = length(DFi[,1]), ncol = length(DFi[,1]))
@@ -60,23 +68,9 @@ distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCo
                 rep(1, times = dim(A)[1])))))*
 			        FCmat*net0
     }
-    Zs <- NULL
-      REind <- which(names(DFi) %in% CorModels)
-      if(length(REind)) {
-        Zs <- list()
-        REnames <- sort(names(DFr)[REind])
-        ## model matrix for a RE factor
-        for(ii in 1:length(REind)) {
-          DFi[,REnames[ii]] = as.factor(as.character(DFi[,REnames[ii]]))
-          Zs[[REnames[ii]]] = model.matrix(~DFi[,REnames[ii]] - 1)
-          Zs[[REnames[ii]]] = tcrossprod(Zs[[REnames[ii]]])
-          rownames(Zs[[REnames[ii]]]) = DFi$pid
-          colnames(Zs[[REnames[ii]]]) = DFi$pid
-        }
-      }
 
     list(y = yi, X = Xi, netDJ = netDJ, net0 = net0, xc = xc, yc = yc, 
-      A = A, B = B, netD = netD, W = W, FCmat = FCmat, Zs = Zs)
+      A = A, B = B, netD = netD, W = W, FCmat = FCmat, Zsi = Zsi)
 }
 
 ################################################################################
@@ -85,20 +79,20 @@ distUpdater = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCo
 ################################################################################
 ################################################################################
 
-distList = function(ssnr, DFr, y, X, xy, CorModels, addfunccol, subSampIndxCol,
+distList = function(ssnr, DFr, y, X, Zs, xy, CorModels, addfunccol, subSampIndxCol,
 	distPath, parallel = parallel)
 {
   nResamp = max(DFr[,subSampIndxCol])
   if(parallel == TRUE)
   Dlists = foreach(i=1:nResamp) %dopar% {
-    distUpdater(ssnr = ssnr, DFr = DFr, y = y, X = X, 
+    distUpdater(ssnr = ssnr, DFr = DFr, y = y, X = X, , Zs = Zs,
     xy = xy, CorModels = CorModels,  addfunccol = addfunccol, 
     subSampIndxCol = subSampIndxCol, i = i, distPath = distPath)
   }
   if(parallel == FALSE) {
 	Dlists = vector("list", nResamp) 
 	for(i in 1:nResamp)
-		Dlists[[i]] = distUpdater(ssnr = ssnr, DFr = DFr, y = y, X = X, 
+		Dlists[[i]] = distUpdater(ssnr = ssnr, DFr = DFr, y = y, X = X, Zs = Zs,
     xy = xy, CorModels = CorModels,  addfunccol = addfunccol, 
     subSampIndxCol = subSampIndxCol, i = i, distPath = distPath)
 	}
@@ -127,7 +121,7 @@ m2LLstrbd <- function(theta, distLi,
         useTailDownWeight = FALSE,
         CorModels = CorModels, 
         use.nugget = TRUE, use.anisotropy = FALSE, 
-        REs = distLi[[i]]$Zs)
+        REs = distLi[[i]]$Zsi)
         qrV = qr(V)
         list(V = V, qrV = qrV, ViX = solve(qrV,distLi[[i]]$X), 
           Viy = solve(qrV,distLi[[i]]$y),
@@ -282,7 +276,8 @@ makeSigijMats = function(ssnr, DFr, xy, CorModels, theta, addfunccol, subSampInd
         use.nugget = FALSE, use.anisotropy = FALSE, 
         REs = Zs)
 
-				return(list(XViCViX = t(Vlist[[i]]$ViX) %*% Cij %*% Vlist[[j]]$ViX))
+				return(list(XViCViX = t(Vlist[[i]]$ViX) %*% Cij %*% Vlist[[j]]$ViX +
+          t(Vlist[[j]]$ViX) %*% t(Cij) %*% Vlist[[i]]$ViX))
 }
 
 
@@ -323,7 +318,8 @@ dMatsEtc = function(ssn, CorModels, dname1, DF1, xy1, addfunccol = NULL,
 			nsofar = 0
 			nsofari = 0
 			nsofarj = 0
-			nIDs <- sort(as.integer(as.character(unique(c(DF1$netID,DF2$netID)))))
+			nIDs <- sort(as.integer(unique(c(as.character(DF1$netID),
+			as.character(DF2$netID)))))
 			for(k in nIDs){
 				if(is.null(dname2)) {
 					distmat = getStreamDistMatInt(ssn,
@@ -331,14 +327,16 @@ dMatsEtc = function(ssn, CorModels, dname1, DF1, xy1, addfunccol = NULL,
 					ni <- length(distmat[1,])
 				}
 				if(!is.null(dname2)) {
+					if(any(DF1$netID == k) & any(DF2$netID == k)){
 					distmat = getStreamDistMatInt(ssn,
 						DF1[DF1$netID == k, 'pid'], dname1,
 						DF2[DF2$netID == k, 'pid'], dname2)
-					ni = dim(distmat[[1]])[1]
-					nj = dim(distmat[[1]])[2]
+					}
+					ni = sum(DF1$netID == k)
+					nj = sum(DF2$netID == k)
 				}
-				rnames <- c(rnames,rownames(distmat[[1]]))
-				cnames = c(cnames,colnames(distmat[[1]]))
+				rnames <- c(rnames,rownames(DF1[DF1$netID == k,,drop = FALSE]))
+				cnames = c(cnames, rownames(DF2[DF2$netID == k,,drop = FALSE]))
 				if(is.null(dname2)) {
 					dist.junc[(nsofar + 1):(nsofar + ni),
 						(nsofar + 1):(nsofar + ni)] <- distmat
@@ -347,12 +345,16 @@ dMatsEtc = function(ssn, CorModels, dname1, DF1, xy1, addfunccol = NULL,
 					nsofar <- nsofar + ni
 				}
 				if(!is.null(dname2)) {
+					if(any(DF1$netID == k) & any(DF2$netID == k)){
 					dist.junc.a[(nsofari + 1):(nsofari + ni),
 						(nsofarj + 1):(nsofarj + nj)] <- distmat[[1]]
 					dist.junc.b[(nsofarj + 1):(nsofarj + nj),
 						(nsofari + 1):(nsofari + ni)] <- distmat[[2]]
 					net.zero[(nsofari + 1):(nsofari + ni),
 						(nsofarj + 1):(nsofarj + nj)] <- 1
+					}
+					nsofari = nsofari + ni
+					nsofarj = nsofarj + nj
 				}
 			}
 			if(is.null(dname2)) {
@@ -472,3 +474,28 @@ dMatsEtc = function(ssn, CorModels, dname1, DF1, xy1, addfunccol = NULL,
 		REs = REs, REPs = REPs))
 }
 
+thetainibd = function(distLi, ng, CorModels)
+{	
+    theta = NULL
+    for(i in 1:ng) {
+      yi = distLi[[i]]$y
+      Xi = distLi[[i]]$X
+      netDi = distLi[[i]]$netD
+      Zsi = distLi[[i]]$Zsi
+      xci = distLi[[i]]$xc
+      yci = distLi[[i]]$yc
+	    theta = cbind(theta, SSN:::theta.ini(z = yi, X = Xi,
+	      CorModels= CorModels,
+	      use.nugget = TRUE, use.anisotropy = FALSE,
+	      dist.hydro.data = netDi, x.dat = xci,
+	      y.dat = yci, REs = Zsi))
+    }
+    theta = theta[,!apply(theta==-Inf | theta==Inf,2,any)]
+    theta = apply(theta,1,mean)
+		attributes(theta) = attributes(SSN:::theta.ini(z = yi, X = Xi,
+				CorModels= CorModels,
+				use.nugget = TRUE, use.anisotropy = FALSE,
+				dist.hydro.data = netDi, x.dat = xci,
+				y.dat = yci, REs = Zsi))
+    theta
+}
