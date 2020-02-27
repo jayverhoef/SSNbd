@@ -26,7 +26,7 @@ Installation of this R data package is done through the `devtools::install_githu
 
 ```
 library("devtools")
-install_github("jayverhoef/fluvgrm")
+install_github("jayverhoef/SSNbd")
 ```
 Also, basic stream network functions have been incorporated from the SSN package, so that needs to be downloaded from CRAN.
 
