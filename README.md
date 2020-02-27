@@ -17,7 +17,7 @@ As a scientific work, and in keeping with common scientific practicies, we kindl
 Executive Summary
 -----------------
 
-We introduce a graphical diagnostic called the Torgegram for characterizing the spatial dependence among observations of a variable on a stream network. The Torgegram consists of four component empirical semivariograms, each one corresponding to a particular combination of flow-connectedness within the network and model type (tail-up/tail-down). We show how an overall strategy for fluvial variography can be based on a careful examination of the Torgegram. An analysis of water temperature data from a stream network within the Columbia River basin of the northwest United States illustrates the diagnostic value of the Torgegram as well as its limitations. Additional uses and extensions of the Torgegram are discussed.
+This package uses data partitioning ideas to allow for the models in the SSN package to be used for big data sets.
 
 Installation
 ------------
