@@ -97,12 +97,14 @@ pulo <- function(ecp, efe, predsID, nNN, poba_prep = FALSE)
 
 			dmts = SSNbd:::dMatsEtc(ecp$ssn, CorModels, 'Obs', DF1, xy1, 
         ecp$mfcall$addfunccol)
+      if(is.null(ecp$mfcall$use.nugget)) {use.nugget = TRUE} else {
+				use.nugget = ecp$mfcall$use.nugget}
 			V <- SSN:::makeCovMat(theta = theta, dist.hydro = dmts$dist.hydro,
 					a.mat = dmts$a.mat, b.mat = dmts$b.mat, w.matrix = dmts$w.matrix,
 					net.zero = dmts$net.zero, x.row = xy1[,1], y.row = xy1[,2],
 					x.col = xy1[,1], y.col = xy1[,2],
 					CorModels, useTailDownWeight = FALSE,
-					use.nugget = ecp$mfcall$use.nugget,
+					use.nugget = use.nugget,
 					use.anisotropy = FALSE, dmts$REs)
 			dmts = SSNbd:::dMatsEtc(ecp$ssn, CorModels, 'Obs', DF1, xy1, 
         ecp$mfcall$addfunccol, predsID, DF2, xy2)	
