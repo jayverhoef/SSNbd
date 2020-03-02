@@ -13,6 +13,7 @@ distUpdater = function(ssnr, DFr, y, X, Zs, xy, CorModels, addfunccol, subSampIn
     DFi = DFr[DFr[subSampIndxCol] == i,] 
     yi = y[DFr[subSampIndxCol] == i]
     Xi = X[DFr[subSampIndxCol] == i,]
+    Zsi = NULL
     if(!is.null(Zs)) {
       Zsi = vector('list', length(Zs))
       for(j in 1:length(Zs)) {
@@ -79,8 +80,8 @@ distUpdater = function(ssnr, DFr, y, X, Zs, xy, CorModels, addfunccol, subSampIn
 ################################################################################
 ################################################################################
 
-distList = function(ssnr, DFr, y, X, Zs, xy, CorModels, addfunccol, subSampIndxCol,
-	distPath, parallel = parallel)
+distList = function(ssnr, DFr, y, X, Zs, xy, CorModels, addfunccol,
+	subSampIndxCol, distPath, parallel)
 {
   nResamp = max(DFr[,subSampIndxCol])
   if(parallel == TRUE)
@@ -384,7 +385,7 @@ dMatsEtc = function(ssn, CorModels, dname1, DF1, xy1, addfunccol = NULL,
     		# creat B matrix (shorted distance to junction of two points)
     		b.mat <- pmin(dist.junc.a,t(dist.junc.b))
     		# get hydrologic distance
-    		dist.hydro <- as.matrix(dist.junc.a + t(dist.junc.b))
+    		dist.hydro <- as.matrix(dist.junc.a + t(dist.junc.b))*net.zero
 			}
 			# binary flow connection matrix
 			flow.con.mat <- 1 - (b.mat > 0)*1

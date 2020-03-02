@@ -12,6 +12,7 @@
 #' @param efe object from fefe function
 #' @param predsID name of prediction data set in ssn object (passed with ecp)
 #' @param nNN number of nearest neighbors for predictions 
+#' @param poba_prep keep the prediction weights so they can be used in block prediction? 
 #'
 #' @return a data.frame with predictions in first column, and prediction standard errors in the second column.
 #'
