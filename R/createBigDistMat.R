@@ -135,7 +135,7 @@ createBigDistMat <- function(ssn, predpts = NULL, o.write = FALSE, amongpreds = 
 
       if(pred.num > 0) {
           ind.preds <- ssn@predpoints@SSNPoints[[pred.num]]@network.point.coords[,"NetworkID"] %in% net.num
-          pred.site.no <- nrow(ssn@obspoints@SSNPoints[[pred.num]]@network.point.coords[ind.preds,])
+          pred.site.no <- nrow(ssn@predpoints@SSNPoints[[pred.num]]@network.point.coords[ind.preds,])
       } else {
           pred.site.no <- 0
       }

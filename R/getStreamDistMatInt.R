@@ -239,6 +239,8 @@ getStreamDistMatInt <- function(ssn, pidset1, dataID1, pidset2 = NULL,
             ## Populate dist.a--------------------------------------------
             ind.sub1 <- data1[,"netID"] == nIDs.all[i]
             ind.sub2 <- data2[,"netID"] == nIDs.all[i]
+
+######## Indicator for column names in obs dist found in ind.sub2 for data2
             ind.whole1 <- colnames(dist) %in% data2[ind.sub2, "pid"]
 
             ## Extract whole column for speed
@@ -252,6 +254,8 @@ getStreamDistMatInt <- function(ssn, pidset1, dataID1, pidset2 = NULL,
             ## If tmp.c is a single column, make sure its a matrix
             if(!is.matrix(tmp.c)) {tmp.c <- as.matrix(tmp.c)}
 
+
+            ## ISSUE IS HERE
             ## Subset by row and populate pid1.pid2.a
             ind.whole2 <- rownames(tmp.c) %in% data1[ind.sub1, "pid"]
             pid1.pid2.a[ind.sub1, ind.sub2]<- tmp.c[ind.whole2,]
@@ -349,7 +353,8 @@ getStreamDistMatInt <- function(ssn, pidset1, dataID1, pidset2 = NULL,
             ## Double check ordering
             colnames(tmp.c)<- colnames(dist.a)[ind.whole1]
             rownames(tmp.c) <- rownames(dist.a)
-            tmp.c <- tmp.c[,order(as.numeric(colnames(tmp.c)))]
+
+            if(nrow(tmp.c) > 1) {tmp.c <- tmp.c[,order(as.numeric(colnames(tmp.c)))]}
 
             ## If tmp.c is a single column, make sure its a matrix
             if(!is.matrix(tmp.c)) {tmp.c <- as.matrix(tmp.c)}
@@ -370,7 +375,7 @@ getStreamDistMatInt <- function(ssn, pidset1, dataID1, pidset2 = NULL,
             ## Double check ordering
             colnames(tmp.c)<- colnames(dist.b)[ind.whole1]
             rownames(tmp.c) <- rownames(dist.b)
-            tmp.c <- tmp.c[,order(as.numeric(colnames(tmp.c)))]
+            if(nrow(tmp.c)>1) {tmp.c <- tmp.c[,order(as.numeric(colnames(tmp.c)))]}
 
             ## If tmp.c is a single column, make sure its a matrix
             if(!is.matrix(tmp.c)) {tmp.c <- as.matrix(tmp.c)}

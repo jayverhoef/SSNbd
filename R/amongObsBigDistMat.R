@@ -46,26 +46,15 @@ amongObsBigDistMat <- function(ssn, net.num, pids, bin.table, workspace.name){
 
 
         if(locID.b != locID.old) {
-
-            junk <- SSN:::get.rid.fc(ob.i_by_locID[ind.dup,"binaryID"],
-                                     ob.i_by_locID$binaryID[ind.pid])
-
-            #####
-            ob.j <- getObsRelationshipsDF(ssn, pid.b,  junk, ind.dup,
-                                     ob.i_by_locID, bin.table)
-	    upDist.i <- ssn@obspoints@SSNPoints[[1]]@network.point.coords[paste(pid.b),
-                                       "DistanceUpstream"]
-
+            junk <- SSN:::get.rid.fc(ob.i_by_locID[ind.dup,"binaryID"], ob.i_by_locID$binaryID[ind.pid])
+            ob.j <- getObsRelationshipsDF(ssn, pid.b,  junk, ind.dup, ob.i_by_locID, bin.table)
+	    upDist.i <- ssn@obspoints@SSNPoints[[1]]@network.point.coords[paste(pid.b),"DistanceUpstream"]
             ob.j <-ob.j[ob.j_reordering,]
 
             ##obs fills in by column because it's working between obs to obs.
             ind.fc<-ob.j$fc==1
-
             dist.obs <- ifelse(ind.fc, upDist.b - ob.j$upDist.j,
                                  upDist.b - ob.j$juncDist)
-
-            ######
-
            ## truncated.binaryIDs <- data.frame(pid=pid.data[,"pid"], junk, stringsAsFactors = FALSE)
            ## truncated.binaryIDs$fc <- as.logical(truncated.binaryIDs$fc)
            ## truncated.binaryIDs$junc.rid <- bin.table$rid[match(truncated.binaryIDs$binaryID, bin.table$binaryID)]
@@ -81,7 +70,7 @@ amongObsBigDistMat <- function(ssn, net.num, pids, bin.table, workspace.name){
            among_distance_matrix[,col.ind] <- ifelse(dist.preds<0, 0,
                                                       dist.preds)
 
-            locID.old <- locID.b
+          locID.old <- locID.b
         } else {
             ## Add same column to among_distance__matrix
             col.ind <- colnames(among_distance_matrix) == as.character(pid.b)
